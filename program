@@ -1,0 +1,70 @@
+
+import sys
+import re
+#import for sys for stdin and out
+#import re for regular expressions
+
+def main():
+    #read in stdin
+    text = sys.stdin.read()
+    #split what was read in
+    splited = text.split('\n')
+    temp = [int (s) for s in splited[0].split() if s.isdigit()]
+    #n = number of variables
+    n = temp[0]
+    #m = number of commands
+    m = temp[1]
+    #create list for the list of equalities
+    list = []
+
+    #regexpression to match for equalities
+    for x in range(0,m):
+        p = re.compile("x\d* == x\d*", re.IGNORECASE)
+        match = p.search(splited[x+2])
+        if match:
+            #assigning matches to list
+            list[x] = match
+        
+    #variables will hold all variables that are used in an equality
+    #it is a dictionary
+    variables = set()
+    for x in range(0,len(list)):
+        #seperate the numbers that correspond to variables
+        temp = [int (s) for s in list[x].split() if s.isdigit()]
+        if temp[0] in variables:
+            #assigning to variables
+            variables[temp[0]] = temp[1] + variables[temp[0]]
+        else:
+            variables[temp[0]] = temp[1]
+        if temp[1] in variables:
+            #assigning for the other direction of assignments
+            #transtive property
+            variables[temp[1]] = temp[0] + variables[temp[1]]
+        else:
+            variables[temp[1]] = temp[0]
+                  
+    #inequalities time, same as before but with !=
+    #create list for the list of inequalities
+    list = []
+    #regexpression to match for inequalities
+    for x in range(0,m):
+        p = re.compile("x\d* != x\d*", re.IGNORECASE)
+        match = p.search(splited[x+2])
+        if match:
+            #assigning matches to list
+            list[x] = match
+    #check inequalities against variables
+    for x in range(0,len (list)):
+        #separate the numbers out to compare as keys
+        temp = [int (s) for s in list[x].split() if s.isdigit()]
+        if temp[0] in variables:
+            #compare the key and see if it contains something it can't be equal to
+            if temp[1] in variables[temp[0]]:
+                sys.stdout.write("NOT SATISFIABLE")
+                return 0
+    sys.stdout.write("SATISFIABLE")
+    return 0
+
+main()
+
+                  
